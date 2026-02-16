@@ -1,16 +1,34 @@
-# React + Vite
+# 🚀 Codebase Review Agent
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Codebase Review Agent is an AI-powered full-stack application that analyzes uploaded codebases and automatically generates structured reports for code quality, security risks, system design, and production readiness using LLM APIs. Built with FastAPI on the backend and React + Vite on the frontend, it allows users to upload a ZIP project, process it through AI analysis, and view clean JSON-based review insights in a modern dashboard interface, helping developers quickly identify issues, improve architecture, and prepare projects for production deployment.
 
-Currently, two official plugins are available:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Upload Page
+![Upload UI](src/assets/image1.png)
 
-## React Compiler
+### Report Dashboard
+![Report UI](src/assets/image2.png)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## ✨ Features
 
-## Expanding the ESLint configuration
+- 🤖 AI-powered automated code review  
+- 🔐 Security vulnerability detection  
+- 🏗 System architecture evaluation  
+- 📊 Production readiness analysis  
+- 📦 Upload entire project as ZIP  
+- ⚡ Fast JSON structured reports  
+- 🎯 Clean and modern UI dashboard  
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## 🛠 Tech Stack
+
+### Backend
+- FastAPI  
+- Python  
+- LLM API (Gemini / OpenAI)  
+- Springboot
+
+### Frontend
+- React + Vite  
+- Tailwind CSS  
