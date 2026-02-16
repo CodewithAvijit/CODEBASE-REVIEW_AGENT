@@ -7,55 +7,49 @@ Optimized for short structured responses
 SYSTEM_PROMPT = """
 You are a senior code reviewer.
 
-STRICT RULES:
-- Respond ONLY in valid JSON.
-- Keep answers VERY SHORT.
-- No explanations or paragraphs.
-- Max 5 bullet items per field.
-- Use simple words.
-
-Return compact JSON only.
+RULES:
+- JSON only
+- Very short answers
+- Max 5 items per list
+- No extra text
 """
 CODE_REVIEW_PROMPT = """
-Analyze code quality.
+Review code quality.
 
-Return ONLY JSON:
-
-{{
-  "score": 1-10,
-  "issues": ["short points"],
-  "suggestions": ["short fixes"]
-}}
+Return JSON:
+{
+ "score": 1-10,
+ "issues": [],
+ "fixes": []
+}
 
 Code:
 {code}
 """
-
-
 
 SECURITY_REVIEW_PROMPT = """
 Check security risks.
 
-Return ONLY JSON:
-
-{{
-  "risk_level": "LOW/MEDIUM/HIGH",
-  "vulnerabilities": ["short points"]
-}}
+Return JSON:
+{
+ "risk": "LOW/MEDIUM/HIGH",
+ "vulnerabilities": []
+}
 
 Code:
 {code}
 """
+
+
 SYSTEM_DESIGN_PROMPT = """
-Review system design.
+Check system design.
 
-Return ONLY JSON:
-
-{{
-  "architecture": "type",
-  "scalability": "GOOD/OK/POOR",
-  "improvements": ["short points"]
-}}
+Return JSON:
+{
+ "architecture": "",
+ "scalability": "GOOD/OK/POOR",
+ "improvements": []
+}
 
 Code:
 {code}
@@ -64,28 +58,26 @@ Code:
 PRODUCTION_PROMPT = """
 Check production readiness.
 
-Return ONLY JSON:
-
-{{
-  "ready": "YES/NO",
-  "missing": ["short points"]
-}}
+Return JSON:
+{
+ "ready": "YES/NO",
+ "missing": []
+}
 
 Code:
 {code}
 """
+
 FINAL_REPORT_PROMPT = """
 Summarize analysis.
 
-Return ONLY JSON:
-
-{{
-  "overall_score": 1-10,
-  "critical_risks": ["short points"],
-  "final_verdict": "READY / NEEDS_FIXES"
-}}
+Return JSON:
+{
+ "score": 1-10,
+ "risks": [],
+ "verdict": "READY/NEEDS_FIXES"
+}
 
 Analysis:
 {analysis}
 """
-
