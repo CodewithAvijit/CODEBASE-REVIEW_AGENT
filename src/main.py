@@ -1,21 +1,19 @@
-"""
-FASTAPI SERVER
-Entry point for Codebase Review Agent
-"""
 
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-
 from pydantic import BaseModel
 import os
 import tempfile
 import shutil
 import traceback
+
 from agent import review_codebase
+
 app = FastAPI(
-    title="AI Codebase Review Agent",
-    version="1.0"
+    title="AI Codebase Review Agent (LangGraph)",
+    version="2.0"
 )
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  

@@ -3,7 +3,7 @@ import os
 SUPPORTED_EXTENSIONS = {
     ".py", ".js", ".ts", ".java", ".cpp", ".c",
     ".go", ".rs", ".php", ".html", ".css",
-    ".json", ".yaml", ".yml"
+    ".json", ".yaml", ".yml",".jsx",".tsx"
 }
 
 IGNORE_DIRS = {

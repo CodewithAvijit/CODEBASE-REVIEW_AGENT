@@ -1,91 +1,96 @@
-"""
-MINIMAL JSON PROMPTS FOR CODEBASE REVIEW AGENT
-Optimized for short structured responses
-"""
-
 
 SYSTEM_PROMPT = """
-You are a senior code reviewer.
+You are an expert Principal Software Engineer and Security Architect.
+Your task is to review code and provide output in strict JSON format.
 
-STRICT RULES:
-- Respond ONLY in valid JSON.
-- Keep answers VERY SHORT.
-- No explanations or paragraphs.
-- Max 5 bullet items per field.
-- Use simple words.
-
-Return compact JSON only.
+CRITICAL RULES:
+1. Output ONLY valid JSON.
+2. Do NOT use Markdown code blocks (no ```json).
+3. Do NOT include conversational text, preambles, or explanations outside the JSON.
+4. Keep values concise and actionable.
+5. If the code is empty or not provided, return an error JSON structure.
 """
+
 CODE_REVIEW_PROMPT = """
-Analyze code quality.
+Analyze the provided code for Clean Code principles, readability, and maintainability.
+Focus on: DRY (Don't Repeat Yourself), SOLID principles, and error handling.
 
-Return ONLY JSON:
-
+RETURN JSON STRUCTURE:
 {{
-  "score": 1-10,
-  "issues": ["short points"],
-  "suggestions": ["short fixes"]
+  "score": <integer_1_to_10>,
+  "quality_summary": "<string_1_sentence_verdict>",
+  "issues": [
+    {{"severity": "high|medium|low", "description": "<short_technical_issue>"}}
+  ],
+  "refactoring_suggestions": ["<specific_actionable_fix>"]
 }}
 
-Code:
+CODE TO REVIEW:
 {code}
 """
-
-
 
 SECURITY_REVIEW_PROMPT = """
-Check security risks.
+Analyze the provided code for security vulnerabilities using OWASP Top 10 guidelines.
+Look specifically for: Injection (SQL/Command), Hardcoded Secrets, Insecure Deserialization, and Improper Error Handling.
 
-Return ONLY JSON:
-
+RETURN JSON STRUCTURE:
 {{
-  "risk_level": "LOW/MEDIUM/HIGH",
-  "vulnerabilities": ["short points"]
+  "security_score": <integer_1_to_10>,
+  "risk_level": "CRITICAL|HIGH|MEDIUM|LOW",
+  "vulnerabilities": [
+    {{"type": "<vulnerability_type>", "location": "<function_or_line>", "description": "<short_description>"}}
+  ],
+  "remediation_steps": ["<specific_fix_command_or_pattern>"]
 }}
 
-Code:
+CODE TO REVIEW:
 {code}
 """
+
 SYSTEM_DESIGN_PROMPT = """
-Review system design.
+Analyze the system architecture, modularity, and scalability of the provided code.
+Identify the architectural pattern (MVC, Microservices, Monolith, etc.) and bottlenecks.
 
-Return ONLY JSON:
-
+RETURN JSON STRUCTURE:
 {{
-  "architecture": "type",
-  "scalability": "GOOD/OK/POOR",
-  "improvements": ["short points"]
+  "architecture_style": "<detected_pattern>",
+  "scalability_rating": "GOOD|NEEDS_WORK|POOR",
+  "bottlenecks": ["<component_or_logic_limiting_scale>"],
+  "design_improvements": ["<architectural_change_suggestion>"]
 }}
 
-Code:
+CODE TO REVIEW:
 {code}
 """
 
 PRODUCTION_PROMPT = """
-Check production readiness.
+Evaluate if this code is production-ready.
+Check for: Logging, Error Handling, Configuration Management, and Comments/Documentation.
 
-Return ONLY JSON:
-
+RETURN JSON STRUCTURE:
 {{
-  "ready": "YES/NO",
-  "missing": ["short points"]
+  "is_production_ready": <boolean_true_false>,
+  "missing_requirements": ["<critical_missing_feature_for_prod>"],
+  "deployment_risks": ["<potential_failure_point>"]
 }}
 
-Code:
+CODE TO REVIEW:
 {code}
 """
+
 FINAL_REPORT_PROMPT = """
-Summarize analysis.
+Synthesize the provided analysis reports into a final executive summary.
+Weigh security risks higher than style issues.
 
-Return ONLY JSON:
-
-{{
-  "overall_score": 1-10,
-  "critical_risks": ["short points"],
-  "final_verdict": "READY / NEEDS_FIXES"
-}}
-
-Analysis:
+INPUT DATA:
 {analysis}
-"""
 
+RETURN JSON STRUCTURE:
+{{
+  "executive_summary": "<3_sentence_overview>",
+  "final_score": <integer_1_to_10>,
+  "critical_blockers": ["<list_of_items_preventing_merge>"],
+  "top_3_recommendations": ["<highest_impact_fix_1>", "<highest_impact_fix_2>", "<highest_impact_fix_3>"],
+  "merge_verdict": "APPROVE | REJECT"
+}}
+"""

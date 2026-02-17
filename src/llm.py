@@ -1,77 +1,53 @@
-"""
-LLM CLIENT LAYER
-Using Ollama (llama3.1) instead of Gemini
-"""
+
 
 import json
 import re
-import requests
+from langchain_ollama import ChatOllama
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
 
-# =========================
-# OLLAMA CONFIG
-# =========================
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
+
 MODEL_NAME = "mistral:latest"
 
-
-# =========================
-# CORE GENERATE FUNCTION
-# =========================
-
-def generate_response(prompt: str) -> str:
-    """
-    Send prompt to Ollama and return response text
-    """
-
-    try:
-        response = requests.post(
-            OLLAMA_URL,
-            json={
-                "model": MODEL_NAME,
-                "prompt": prompt,
-                "stream": False,
-                "options": {
-                    "temperature": 0.2,
-                    "num_predict": 400
-                }
-            },
-            timeout=120
-        )
-
-        return response.json()["response"].strip()
-
-    except Exception as e:
-        return json.dumps({"error": str(e)})
+llm = ChatOllama(
+    model=MODEL_NAME,
+    temperature=0.2,
+    base_url="http://localhost:11434"
+)
 
 def extract_json(text: str):
+    """
+    Robust JSON extraction helper
+    """
     try:
         text = re.sub(r"```json|```", "", text)
-
         match = re.search(r"\{.*\}", text, re.DOTALL)
-
         if match:
             return json.loads(match.group())
-
         return {"error": "No JSON found", "raw": text}
-
     except Exception:
         return {"error": "Invalid JSON format", "raw": text}
 
-
-
-def run_analysis(system_prompt: str, task_prompt: str, code: str):
+def run_analysis(system_prompt: str, task_prompt: str, code: str = ""):
+    """
+    Uses LangChain to run the analysis and return parsed JSON.
+    """
     safe_code = code[:20000]
 
-    final_prompt = f"""
-{system_prompt}
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", "{system_prompt}"),
+        ("user", "{task_prompt}\n\nCODE:\n{code}")
+    ])
 
-{task_prompt}
+    chain = prompt | llm | StrOutputParser()
 
-CODE:
-{safe_code}
-"""
-
-    raw_output = generate_response(final_prompt)
-
-    return extract_json(raw_output)
+    try:
+        response = chain.invoke({
+            "system_prompt": system_prompt,
+            "task_prompt": task_prompt,
+            "code": safe_code
+        })
+        return extract_json(response)
+    except Exception as e:
+        return {"error": str(e)}
