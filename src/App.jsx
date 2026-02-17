@@ -8,7 +8,6 @@ function App() {
       <Routes>
         <Route path="/" element={<UploadPage/>} />
         <Route path="/report" element={<ReportPage/>} />
-        {/* Redirect unknown routes to upload */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
   );

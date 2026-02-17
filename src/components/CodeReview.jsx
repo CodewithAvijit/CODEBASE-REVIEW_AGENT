@@ -1,49 +1,103 @@
 import React from 'react';
+import { Code, AlertCircle, Lightbulb, CheckCircle2 } from 'lucide-react';
+import ReviewCard from './ReviewCard';
 
 const CodeReview = ({ data }) => {
+  if (!data) return null;
+
+  const getSeverityStyles = (severity) => {
+    switch (severity?.toLowerCase()) {
+      case 'high':
+        return 'bg-rose-50 border-rose-100 text-rose-900 icon-rose-600 badge-rose';
+      case 'medium':
+        return 'bg-amber-50 border-amber-100 text-amber-900 icon-amber-600 badge-amber';
+      default:
+        return 'bg-slate-50 border-slate-100 text-slate-700 icon-slate-500 badge-slate';
+    }
+  };
+
+  const getBadgeStyles = (severity) => {
+    switch (severity?.toLowerCase()) {
+      case 'high':
+        return 'bg-rose-100 text-rose-700';
+      case 'medium':
+        return 'bg-amber-100 text-amber-700';
+      default:
+        return 'bg-slate-200 text-slate-600';
+    }
+  };
+
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden h-full flex flex-col">
-      {/* Modern Header: Clean white with colored accent line */}
-      <div className="border-t-4 border-blue-500 px-6 py-4 flex justify-between items-center bg-slate-50/50">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
+    <ReviewCard title="Code Quality" score={data.score} icon={Code}>
+      <div className="space-y-8">
+        
+        <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-indigo-50 to-white border border-indigo-100 p-6">
+          <div className="flex gap-4">
+            <div className="p-2 bg-indigo-100 rounded-lg h-fit">
+               <CheckCircle2 className="w-5 h-5 text-indigo-600" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-indigo-900 uppercase tracking-wide mb-1">Quality Verdict</h4>
+              <p className="text-slate-700 leading-relaxed font-medium">
+                {data.quality_summary}
+              </p>
+            </div>
           </div>
-          <h2 className="font-bold text-slate-800">Code Quality</h2>
-        </div>
-        <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-bold border border-blue-100">
-          Score: {data.score}/10
-        </span>
-      </div>
-      
-      <div className="p-6 space-y-6 flex-grow">
-        {/* Issues Section */}
-        <div>
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Critical Issues</h3>
-          <ul className="space-y-3">
-            {data.issues.map((issue, index) => (
-              <li key={index} className="flex items-start gap-3 text-sm text-slate-600 bg-red-50/50 p-3 rounded-md border border-red-100/50">
-                <svg className="w-5 h-5 text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                <span>{issue}</span>
-              </li>
-            ))}
-          </ul>
         </div>
 
-        {/* Suggestions Section */}
-        <div>
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Optimizations</h3>
-          <ul className="space-y-3">
-            {data.suggestions.map((suggestion, index) => (
-              <li key={index} className="flex items-start gap-3 text-sm text-slate-600 bg-emerald-50/50 p-3 rounded-md border border-emerald-100/50">
-                <svg className="w-5 h-5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                <span>{suggestion}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
+        {data.issues && data.issues.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Issues Identified</h4>
+              <span className="bg-slate-100 text-slate-500 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                {data.issues.length}
+              </span>
+            </div>
+            <div className="space-y-3">
+              {data.issues.map((issue, idx) => {
+                const style = getSeverityStyles(issue.severity);
+                const badgeStyle = getBadgeStyles(issue.severity);
+                
+                return (
+                  <div key={idx} className={`flex gap-4 p-4 rounded-xl border transition-all hover:shadow-sm ${style}`}>
+                    <AlertCircle className={`w-5 h-5 shrink-0 mt-0.5 ${
+                        issue.severity === 'high' ? 'text-rose-500' : 
+                        issue.severity === 'medium' ? 'text-amber-500' : 'text-slate-400'
+                    }`} />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md tracking-wider ${badgeStyle}`}>
+                          {issue.severity}
+                        </span>
+                      </div>
+                      <p className="text-sm font-medium leading-6 opacity-90">{issue.description}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {data.refactoring_suggestions && data.refactoring_suggestions.length > 0 && (
+          <div>
+            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Refactoring Tips</h4>
+            <div className="grid gap-3">
+              {data.refactoring_suggestions.map((tip, idx) => (
+                <div key={idx} className="group flex items-start gap-3 p-3 rounded-lg hover:bg-yellow-50/50 transition-colors">
+                  <div className="mt-1 p-1.5 bg-yellow-100 rounded-md group-hover:bg-yellow-200 transition-colors">
+                    <Lightbulb className="w-3.5 h-3.5 text-yellow-600" />
+                  </div>
+                  <span className="text-sm text-slate-600 font-medium leading-relaxed group-hover:text-slate-800">
+                    {tip}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-    </div>
+    </ReviewCard>
   );
 };
 

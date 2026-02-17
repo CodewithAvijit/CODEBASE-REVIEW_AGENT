@@ -1,95 +1,109 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { UploadCloud, FileCode, Loader2, MousePointerClick } from 'lucide-react';
 
-const UploadZone = ({ onFileSelect, selectedFile, isAnalyzing }) => {
+const UploadZone = ({ onFileSelect, isUploading }) => {
   const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef(null);
 
-  const handleDrag = (e) => {
+  const handleDragOver = (e) => {
     e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setIsDragging(true);
-    } else if (e.type === "dragleave") {
-      setIsDragging(false);
-    }
+    if (!isUploading) setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
-    e.stopPropagation();
     setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+    
+    if (!isUploading && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       onFileSelect(e.dataTransfer.files[0]);
     }
   };
 
+  const handleClick = () => {
+    if (!isUploading) {
+      fileInputRef.current?.click();
+    }
+  };
+
   const handleFileInput = (e) => {
-    if (e.target.files && e.target.files[0]) {
+    if (e.target.files && e.target.files.length > 0) {
       onFileSelect(e.target.files[0]);
+      e.target.value = '';
     }
   };
 
   return (
     <div
-      onDragEnter={handleDrag}
-      onDragLeave={handleDrag}
-      onDragOver={handleDrag}
+      onClick={handleClick}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       className={`
-        relative group cursor-pointer
-        border-2 border-dashed rounded-2xl p-10 text-center transition-all duration-300 ease-in-out
-        ${isDragging 
-          ? 'border-blue-500 bg-blue-50/50 scale-[1.02]' 
-          : 'border-slate-200 hover:border-blue-400 hover:bg-slate-50'}
-        ${isAnalyzing ? 'opacity-50 pointer-events-none grayscale' : ''}
+        relative group flex flex-col items-center justify-center w-full h-80
+        rounded-3xl border-2 border-dashed transition-all duration-300 ease-out
+        ${isUploading 
+          ? 'bg-slate-50 border-slate-200 cursor-wait' 
+          : isDragging 
+            ? 'border-indigo-500 bg-indigo-50/50 scale-[1.01] shadow-2xl shadow-indigo-100' 
+            : 'border-slate-200 bg-slate-50/30 hover:bg-white hover:border-indigo-300 hover:shadow-xl hover:shadow-slate-100 cursor-pointer'
+        }
       `}
     >
-      <input 
-        type="file" 
-        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+      <input
+        type="file"
+        ref={fileInputRef}
         onChange={handleFileInput}
-        disabled={isAnalyzing}
-        // Accept common code archives and files
-        accept=".zip,.tar,.gz,.js,.jsx,.ts,.tsx,.py,.java,.cpp,.c,.cs,.go,.rs,.php,.html,.css,.json,.xml,.yaml,.yml"
+        className="hidden"
+        disabled={isUploading}
       />
-      
-      <div className="flex flex-col items-center gap-4 transition-transform group-hover:-translate-y-1">
-        {selectedFile ? (
-          <>
-            <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center shadow-sm">
-              {/* File Code Icon */}
-              <svg className="w-8 h-8" width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
+
+      {isUploading ? (
+        <div className="flex flex-col items-center animate-in fade-in zoom-in duration-500">
+          <div className="relative mb-8">
+            <div className="absolute inset-0 bg-indigo-500/20 rounded-full blur-2xl animate-pulse"></div>
+            <div className="relative bg-white p-4 rounded-2xl shadow-sm border border-indigo-100">
+                <Loader2 className="w-10 h-10 text-indigo-600 animate-spin" />
             </div>
-            <div>
-              <div className="text-lg font-bold text-slate-900">{selectedFile.name}</div>
-              <div className="text-sm text-slate-400 font-mono">{(selectedFile.size / 1024).toFixed(2)} KB</div>
-            </div>
-            <button 
-              onClick={(e) => { e.stopPropagation(); onFileSelect(null); }}
-              className="z-20 text-xs text-red-500 hover:text-red-700 font-medium underline mt-1"
-            >
-              Change File
-            </button>
-          </>
-        ) : (
-          <>
-            <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-2 transition-colors ${isDragging ? 'bg-blue-200 text-blue-700' : 'bg-slate-100 text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-500'}`}>
-              {/* Cloud Upload Icon */}
-              <svg className="w-8 h-8" width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-              </svg>
-            </div>
-            <div>
-              <span className="text-blue-600 font-bold text-lg">Upload Codebase</span>
-              <span className="text-slate-500 text-lg"> or drag & drop</span>
-            </div>
-            <p className="text-sm text-slate-400 mt-1 max-w-xs mx-auto">
-              Supports single files (.js, .py, .java) or archives (.zip) for full project context.
-            </p>
-          </>
-        )}
-      </div>
+          </div>
+          <h3 className="text-xl font-bold text-slate-800 tracking-tight">Processing Project</h3>
+          <p className="text-slate-500 font-medium mt-2">AI agents are analyzing your code...</p>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center text-center p-8 transition-transform duration-300 group-hover:-translate-y-1">
+          <div className={`
+            p-6 rounded-3xl mb-6 transition-all duration-300
+            ${isDragging 
+              ? 'bg-indigo-100 text-indigo-600 rotate-3 scale-110' 
+              : 'bg-white shadow-sm ring-1 ring-slate-100 text-slate-400 group-hover:text-indigo-600 group-hover:ring-indigo-100 group-hover:shadow-indigo-100'
+            }
+          `}>
+            {isDragging ? (
+              <FileCode className="w-14 h-14" strokeWidth={1.5} />
+            ) : (
+              <UploadCloud className="w-14 h-14" strokeWidth={1.5} />
+            )}
+          </div>
+          
+          <h3 className={`text-xl font-bold mb-3 transition-colors ${isDragging ? 'text-indigo-600' : 'text-slate-700 group-hover:text-slate-900'}`}>
+            {isDragging ? 'Drop to Analyze' : 'Upload Source Code'}
+          </h3>
+          
+          <div className="flex items-center gap-2 text-sm text-slate-500 bg-white px-4 py-2 rounded-full border border-slate-100 shadow-sm group-hover:border-indigo-100 group-hover:text-indigo-600 transition-colors">
+            <MousePointerClick className="w-4 h-4" />
+            <span className="font-semibold">Click to browse</span>
+            <span className="opacity-50">or drag file</span>
+          </div>
+          
+          <p className="text-xs font-medium text-slate-400 mt-6 tracking-wide uppercase opacity-0 transform translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500">
+            Supports .ZIP, .JS, .PY, .JAVA, .TS
+          </p>
+        </div>
+      )}
     </div>
   );
 };
