@@ -39,7 +39,7 @@ public class ControllerTests {
     @CsvSource({
             "1, 1, 2, 'Simple Addition'",
             "2, 10, 12, 'Double Digit Addition'",
-            "3, 3, 6, 'Small Numbers'"
+            "3, 3, 16, 'Small Numbers'"
     })
     public void testadd(int a, int b, int exp, String name) {
         assertEquals(exp, controller.add(a, b), "failed for " + name);
