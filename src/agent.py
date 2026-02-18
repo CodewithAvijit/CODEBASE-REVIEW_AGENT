@@ -1,17 +1,15 @@
 import json
-from typing import TypedDict, Annotated
+import asyncio
+from typing import TypedDict
 from langgraph.graph import StateGraph, END
 
 from parser import parse_codebase, truncate_code
-from prompts import (
-    SYSTEM_PROMPT,
-    CODE_REVIEW_PROMPT,
-    SECURITY_REVIEW_PROMPT,
-    SYSTEM_DESIGN_PROMPT,
-    PRODUCTION_PROMPT,
-    FINAL_REPORT_PROMPT
-)
+from prompts import *
 from llm import run_analysis
+
+
+# ================= STATE =================
+
 class AgentState(TypedDict):
     project_path: str
     code: str
@@ -21,69 +19,86 @@ class AgentState(TypedDict):
     production_review: dict
     final_report: dict
 
-def load_code_node(state: AgentState):
+
+# ================= CONCURRENCY CONTROL =================
+# Local LLM cannot handle many parallel requests
+ollama_semaphore = asyncio.Semaphore(2)
+
+
+# ================= NODES =================
+
+async def load_code_node(state: AgentState):
     print("📂 Parsing codebase...")
     code = parse_codebase(state["project_path"])
-    code = truncate_code(code)
-    
-    if not code.strip():
-        code = "NO CODE FOUND"
-        
+
+    # Keep only limited code in memory
+    code = truncate_code(code[:12000])
+
     return {"code": code}
 
-def code_review_node(state: AgentState):
-    print("🧠 Running code quality analysis...")
-    result = run_analysis(
-        SYSTEM_PROMPT,
-        CODE_REVIEW_PROMPT.format(code=state["code"]),
-        state["code"]
-    )
-    return {"code_review": result}
 
-def security_review_node(state: AgentState):
-    print("🔐 Running security audit...")
-    result = run_analysis(
-        SYSTEM_PROMPT,
-        SECURITY_REVIEW_PROMPT.format(code=state["code"]),
-        state["code"]
-    )
-    return {"security_review": result}
+async def code_review_node(state: AgentState):
+    async with ollama_semaphore:
+        print("🧠 Code Quality Check...")
+        result = await run_analysis(
+            SYSTEM_PROMPT,
+            CODE_REVIEW_PROMPT,
+            state["code"]
+        )
+        return {"code_review": result}
 
-def design_review_node(state: AgentState):
-    print("🏗 Running system design review...")
-    result = run_analysis(
-        SYSTEM_PROMPT,
-        SYSTEM_DESIGN_PROMPT.format(code=state["code"]),
-        state["code"]
-    )
-    return {"design_review": result}
 
-def production_review_node(state: AgentState):
-    print("🚀 Evaluating production readiness...")
-    result = run_analysis(
-        SYSTEM_PROMPT,
-        PRODUCTION_PROMPT.format(code=state["code"]),
-        state["code"]
-    )
-    return {"production_review": result}
+async def security_review_node(state: AgentState):
+    async with ollama_semaphore:
+        print("🔐 Security Check...")
+        result = await run_analysis(
+            SYSTEM_PROMPT,
+            SECURITY_REVIEW_PROMPT,
+            state["code"]
+        )
+        return {"security_review": result}
 
-def final_report_node(state: AgentState):
-    print("📊 Generating final report...")
-    
-    combined_analysis = json.dumps({
-        "code_review": state.get("code_review"),
-        "security_review": state.get("security_review"),
-        "design_review": state.get("design_review"),
-        "production_review": state.get("production_review")
+
+async def design_review_node(state: AgentState):
+    async with ollama_semaphore:
+        print("🏗 Design Check...")
+        result = await run_analysis(
+            SYSTEM_PROMPT,
+            SYSTEM_DESIGN_PROMPT,
+            state["code"]
+        )
+        return {"design_review": result}
+
+
+async def production_review_node(state: AgentState):
+    async with ollama_semaphore:
+        print("🚀 Production Readiness Check...")
+        result = await run_analysis(
+            SYSTEM_PROMPT,
+            PRODUCTION_PROMPT,
+            state["code"]
+        )
+        return {"production_review": result}
+
+
+async def final_report_node(state: AgentState):
+    print("📊 Generating Final Report...")
+
+    combined = json.dumps({
+        "code": state.get("code_review"),
+        "security": state.get("security_review"),
+        "design": state.get("design_review"),
+        "production": state.get("production_review")
     })
 
-    result = run_analysis(
-        SYSTEM_PROMPT,
-        FINAL_REPORT_PROMPT.format(analysis=combined_analysis),
-        combined_analysis
-    )
+    prompt = FINAL_REPORT_PROMPT.replace("{analysis}", combined)
+
+    result = await run_analysis(SYSTEM_PROMPT, prompt)
+
     return {"final_report": result}
 
+
+# ================= GRAPH =================
 
 workflow = StateGraph(AgentState)
 
@@ -96,42 +111,50 @@ workflow.add_node("final_report", final_report_node)
 
 workflow.set_entry_point("load_code")
 
+# Parallel fan-out
 workflow.add_edge("load_code", "code_review")
 workflow.add_edge("load_code", "security_review")
 workflow.add_edge("load_code", "design_review")
 workflow.add_edge("load_code", "production_review")
 
+# Fan-in
 workflow.add_edge("code_review", "final_report")
 workflow.add_edge("security_review", "final_report")
 workflow.add_edge("design_review", "final_report")
 workflow.add_edge("production_review", "final_report")
+
 workflow.add_edge("final_report", END)
 
 app_graph = workflow.compile()
 
 
-def review_codebase(project_path: str) -> dict:
+# ================= MAIN ENTRY FUNCTION =================
+
+async def review_codebase(project_path: str) -> dict:
     """
-    Runs full multi-stage AI analysis using LangGraph
+    Main public function used by FastAPI.
+    Returns ONLY review JSON — never returns code.
     """
-    print(f"🚀 Starting LangGraph workflow for: {project_path}")
-    
+
     initial_state = {
         "project_path": project_path,
-        "code": "",
+        "code": "",  # required for state schema
         "code_review": {},
         "security_review": {},
         "design_review": {},
         "production_review": {},
         "final_report": {}
     }
-    
-    final_state = app_graph.invoke(initial_state)
-    
+
+    final_state = await app_graph.ainvoke(initial_state)
+
+    # 🔥 CRITICAL FIX: DO NOT RETURN FULL STATE
+    # Only return clean review data
+
     return {
-        "code_review": final_state["code_review"],
-        "security_review": final_state["security_review"],
-        "design_review": final_state["design_review"],
-        "production_review": final_state["production_review"],
-        "final_report": final_state["final_report"]
+        "code_review": final_state.get("code_review"),
+        "security_review": final_state.get("security_review"),
+        "design_review": final_state.get("design_review"),
+        "production_review": final_state.get("production_review"),
+        "final_report": final_state.get("final_report")
     }
