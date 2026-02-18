@@ -1,15 +1,21 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import UploadPage from './pages/UploadPage';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import LoginPage from './pages/LoginPage';
 import ReportPage from './pages/ReportPage';
+import ProtectedRoute from './pages/ProtectedRoute';
+import AuthSuccess from './pages/AuthSucess';
+import HomePage from './pages/HomePage';
 
 function App() {
   return (
-      <Routes>
-        <Route path="/" element={<UploadPage/>} />
-        <Route path="/report" element={<ReportPage/>} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+    <Routes>
+      <Route path="/" element={<LoginPage />} />
+      <Route path="/auth-success" element={<AuthSuccess />} />
+      <Route element={<ProtectedRoute />}>
+        <Route path="/home" element={<HomePage/>} />
+        <Route path="/report" element={<ReportPage />} />
+      </Route>
+    </Routes>
   );
 }
 

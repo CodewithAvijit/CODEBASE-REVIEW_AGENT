@@ -1,17 +1,18 @@
 import React from 'react';
-import { CheckCircle2, XCircle, AlertTriangle, MinusCircle, Info, ShieldAlert } from 'lucide-react';
+import { CheckCircle2, XCircle, AlertTriangle, MinusCircle, ShieldAlert } from 'lucide-react';
 
 const StatusBadge = ({ status }) => {
   const getStatusConfig = (rawStatus) => {
     if (!rawStatus) return 'UNKNOWN';
     
-    const s = rawStatus.toUpperCase();
+    const s = String(rawStatus).toUpperCase();
 
-    if (s.includes('REJECT') || s.includes('BLOCKER') || s.includes('CRITICAL')) return 'REJECT';
-    if (s.includes('APPROVE') && (s.includes('CONDITION') || s.includes('COMMENT') || s.includes('NOTE'))) return 'WITH_COMMENTS';
-    if (s.includes('APPROVE')) return 'APPROVE';
+    // Mapping for various LLM outputs to specific visual states
+    if (s.includes('REJECT') || s.includes('BLOCKER') || s.includes('NO') || s.includes('CRITICAL')) return 'REJECT';
+    if (s.includes('CONDITION') || s.includes('COMMENT') || s.includes('NOTE') || s.includes('WITH_COMMENTS')) return 'WITH_COMMENTS';
+    if (s.includes('APPROVE') || s.includes('YES') || s.includes('TRUE')) return 'APPROVE';
     if (s.includes('READY') || s.includes('PRODUCTION')) return 'READY';
-    if (s.includes('FIX') || s.includes('issue')) return 'NEEDS_FIXES';
+    if (s.includes('FIX') || s.includes('ISSUE')) return 'NEEDS_FIXES';
 
     return 'UNKNOWN';
   };
@@ -20,57 +21,57 @@ const StatusBadge = ({ status }) => {
 
   const styles = {
     APPROVE: {
-      container: 'bg-emerald-50 text-emerald-700 border-emerald-200 ring-emerald-100',
+      container: 'bg-[#00ff66]/10 text-[#00ff66] border-[#00ff66]/40 shadow-[0_0_10px_rgba(0,255,102,0.1)]',
       icon: CheckCircle2,
-      label: 'Approved',
-      glow: 'bg-emerald-400'
+      label: 'APPROVED',
+      glow: 'bg-[#00ff66]'
     },
     READY: {
-      container: 'bg-blue-50 text-blue-700 border-blue-200 ring-blue-100',
+      container: 'bg-[#0099ff]/10 text-[#0099ff] border-[#0099ff]/40 shadow-[0_0_10px_rgba(0,153,255,0.1)]',
       icon: CheckCircle2,
-      label: 'Production Ready',
-      glow: 'bg-blue-400'
+      label: 'PROD_READY',
+      glow: 'bg-[#0099ff]'
     },
     WITH_COMMENTS: {
-      container: 'bg-amber-50 text-amber-700 border-amber-200 ring-amber-100',
+      container: 'bg-[#ffcc00]/10 text-[#ffcc00] border-[#ffcc00]/40 shadow-[0_0_10px_rgba(255,204,0,0.1)]',
       icon: AlertTriangle,
-      label: 'Conditional Approval',
-      glow: 'bg-amber-400'
+      label: 'CONDITIONAL_OK',
+      glow: 'bg-[#ffcc00]'
     },
     NEEDS_FIXES: {
-      container: 'bg-orange-50 text-orange-700 border-orange-200 ring-orange-100',
+      container: 'bg-[#ff9900]/10 text-[#ff9900] border-[#ff9900]/40 shadow-[0_0_10px_rgba(255,153,0,0.1)]',
       icon: AlertTriangle,
-      label: 'Changes Requested',
-      glow: 'bg-orange-400'
+      label: 'CHANGES_REQ',
+      glow: 'bg-[#ff9900]'
     },
     REJECT: {
-      container: 'bg-rose-50 text-rose-700 border-rose-200 ring-rose-100',
+      container: 'bg-[#ff3333]/10 text-[#ff3333] border-[#ff3333]/40 shadow-[0_0_10px_rgba(255,51,51,0.1)]',
       icon: ShieldAlert,
-      label: 'Rejected',
-      glow: 'bg-rose-500'
+      label: 'REJECTED',
+      glow: 'bg-[#ff3333]'
     },
     UNKNOWN: {
-      container: 'bg-slate-50 text-slate-600 border-slate-200 ring-slate-100',
+      container: 'bg-[#111] text-[#666] border-[#222]',
       icon: MinusCircle,
-      label: 'Status Unknown',
-      glow: 'bg-slate-400'
+      label: 'STATUS_PENDING',
+      glow: 'bg-[#333]'
     }
   };
 
-  const current = styles[configKey];
+  const current = styles[configKey] || styles.UNKNOWN;
   const Icon = current.icon;
 
   return (
     <div className={`
-      relative inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full 
-      border ring-1 ring-inset transition-all duration-300
+      relative inline-flex items-center gap-2.5 px-3 py-1.5 rounded-sm 
+      border transition-all duration-500 font-mono
       ${current.container}
     `}>
-      <span className={`absolute left-2 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full ${current.glow} animate-pulse`}></span>
+      <span className={`absolute left-2 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-sm ${current.glow} animate-[pulse_2s_ease-in-out_infinite] shadow-[0_0_5px_currentColor]`}></span>
       
-      <Icon className="w-4 h-4 ml-2" strokeWidth={2.5} />
+      <Icon className="w-4 h-4 ml-3" strokeWidth={2.5} />
       
-      <span className="text-xs font-bold uppercase tracking-wider pr-1">
+      <span className="text-[10px] font-black uppercase tracking-[0.2em] pr-1">
         {current.label}
       </span>
     </div>
