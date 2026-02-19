@@ -10,7 +10,7 @@ const LoginPage = () => {
     const handleLogin = () => {
         setError('');
         setIsConnecting(true);
-        const loginUrl = "http://localhost:8000/oauth2/authorization/github";
+        const loginUrl = "https://codebase-review-agent-backend.onrender.com/oauth2/authorization/github";
         const popup = window.open(loginUrl, "GitHub Login", "width=500,height=600");
         
         const timer = setInterval(() => {
@@ -36,7 +36,6 @@ const LoginPage = () => {
     return (
         <div className="min-h-screen flex items-center justify-center bg-[#030303] px-4 relative overflow-hidden font-sans text-gray-300 selection:bg-[#00ff66]/30 selection:text-white">
             
-            {/* Ambient Animated Background */}
             <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
                 <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px]"></div>
                 <div className="absolute top-[10%] left-[10%] w-[40vw] h-[40vw] bg-[#00ff66]/10 rounded-full blur-[120px] mix-blend-screen animate-pulse duration-10000"></div>
