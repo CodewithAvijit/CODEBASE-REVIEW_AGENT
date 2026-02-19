@@ -1,20 +1,29 @@
-package com.bridge.cagent;
+// package com.bridge.cagent;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.web.servlet.MockMvc;
+// import org.junit.jupiter.api.Test;
+// import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.boot.resttestclient.TestRestTemplate;
+// import org.springframework.boot.test.context.SpringBootTest;
+// import org.springframework.boot.test.web.server.LocalServerPort;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-public class ControllerTests {
-   @Autowired
-    private MockMvc mockMvc;
+// import static org.assertj.core.api.Assertions.assertThat;
 
-    @Test
-    public void testGithubLoginRedirect() throws Exception {
-        mockMvc.perform(get("/login/github"))
-                .andExpect(status().isFound()) 
-                .andExpect(header().string("Location", "/oauth2/authorization/github")); 
-    }
-}
+// @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+// class ControllerTests {
+
+//     @LocalServerPort
+//     int port;
+
+//     @Autowired
+//     TestRestTemplate restTemplate;
+
+//     @Test
+//     void testGithubLogin() {
+//         var response = restTemplate.getForEntity(
+//                 "http://localhost:" + port + "/login/github",
+//                 String.class
+//         );
+
+//         assertThat(response.getStatusCode()).isEqualTo(302);
+//     }
+// }

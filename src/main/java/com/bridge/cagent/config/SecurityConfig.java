@@ -34,10 +34,10 @@ public class SecurityConfig {
                                     oauthToken.getName());
 
                             String accessToken = client.getAccessToken().getTokenValue();
-                            String frontendRedirect = "http://localhost:5173/auth-success#access_token=" + accessToken;
+                            String frontendRedirect = "https://codebase-review-agent.onrender.com/auth-success#access_token=" + accessToken;
                             response.sendRedirect(frontendRedirect);
                         })
-                        .failureUrl("http://localhost:5173/auth-success#error=access_denied"));
+                        .failureUrl("https://codebase-review-agent.onrender.com/auth-success#error=access_denied"));
 
         return http.build();
     }
