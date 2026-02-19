@@ -38,7 +38,7 @@ Seamlessly navigate your GitHub repositories, branches, and directory tree. Choo
 
 ### 3. System Audit Log
 Receive a comprehensive integrity score, code quality breakdown, and security audit based on AI analysis.
-![Audit Log](/assets/img3.png)
+![Audit Log](/assests/im3.png)
 
 ### 4. Workflow of Ai Agent
 Receive a comprehensive integrity score, code quality breakdown, and security audit based on AI analysis.
@@ -81,15 +81,9 @@ This project is built using a modern, scalable, and AI-ready architecture:
 ### Local Setup
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/yourusername/guardian-of-code.git](https://github.com/yourusername/guardian-of-code.git)
+   git clone [https://github.com/CodewithAvijit/CODEBASE-REVIEW_AGENT.git](https://github.com/CodewithAvijit/CODEBASE-REVIEW_AGENT.git)
 
 ```
-
-
-
-
-
-
 ---
 
 ## 👨‍💻 Author
