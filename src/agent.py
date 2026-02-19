@@ -8,7 +8,6 @@ from prompts import *
 from llm import run_analysis
 
 
-# ================= STATE =================
 
 class AgentState(TypedDict):
     project_path: str
@@ -20,18 +19,15 @@ class AgentState(TypedDict):
     final_report: dict
 
 
-# ================= CONCURRENCY CONTROL =================
-# Local LLM cannot handle many parallel requests
+
 ollama_semaphore = asyncio.Semaphore(2)
 
 
-# ================= NODES =================
 
 async def load_code_node(state: AgentState):
     print("📂 Parsing codebase...")
     code = parse_codebase(state["project_path"])
 
-    # Keep only limited code in memory
     code = truncate_code(code[:12000])
 
     return {"code": code}
@@ -98,7 +94,6 @@ async def final_report_node(state: AgentState):
     return {"final_report": result}
 
 
-# ================= GRAPH =================
 
 workflow = StateGraph(AgentState)
 
@@ -111,13 +106,11 @@ workflow.add_node("final_report", final_report_node)
 
 workflow.set_entry_point("load_code")
 
-# Parallel fan-out
 workflow.add_edge("load_code", "code_review")
 workflow.add_edge("load_code", "security_review")
 workflow.add_edge("load_code", "design_review")
 workflow.add_edge("load_code", "production_review")
 
-# Fan-in
 workflow.add_edge("code_review", "final_report")
 workflow.add_edge("security_review", "final_report")
 workflow.add_edge("design_review", "final_report")
@@ -128,7 +121,6 @@ workflow.add_edge("final_report", END)
 app_graph = workflow.compile()
 
 
-# ================= MAIN ENTRY FUNCTION =================
 
 async def review_codebase(project_path: str) -> dict:
     """
@@ -138,7 +130,7 @@ async def review_codebase(project_path: str) -> dict:
 
     initial_state = {
         "project_path": project_path,
-        "code": "",  # required for state schema
+        "code": "",  
         "code_review": {},
         "security_review": {},
         "design_review": {},
@@ -148,8 +140,7 @@ async def review_codebase(project_path: str) -> dict:
 
     final_state = await app_graph.ainvoke(initial_state)
 
-    # 🔥 CRITICAL FIX: DO NOT RETURN FULL STATE
-    # Only return clean review data
+
 
     return {
         "code_review": final_state.get("code_review"),

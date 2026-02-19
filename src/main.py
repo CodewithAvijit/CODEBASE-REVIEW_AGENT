@@ -16,13 +16,10 @@ from pydantic import BaseModel
 from agent import review_codebase
 
 
-# ================= LOGGING =================
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-# ================= FASTAPI SETUP =================
 
 app = FastAPI(
     title="AI Codebase Review Agent (LangGraph)",
@@ -38,10 +35,9 @@ app.add_middleware(
 )
 
 
-# ================= REQUEST MODELS =================
 
 class GitHubBranchRequest(BaseModel):
-    repo_url: str  # Reverted back to repo_url to perfectly match your React frontend
+    repo_url: str  
     branch_name: str
     github_token: Optional[str] = None
 
@@ -50,15 +46,13 @@ class ReviewRequest(BaseModel):
     project_path: str
 
 
-# ================= UTILITIES =================
 
 def parse_github_repo(repo_string: str):
     try:
-        # Strip out the URL prefix if the user accidentally includes it
+
         clean_str = repo_string.replace("https://github.com/", "").replace("http://github.com/", "")
         parts = clean_str.rstrip("/").split("/")
         
-        # Make sure we have at least owner and repo
         if len(parts) < 2:
             raise ValueError
             
@@ -79,14 +73,12 @@ async def safe_cleanup(temp_dir: Optional[str]):
         logger.warning("⚠️ Cleanup failed but ignored.")
 
 
-# ================= HEALTH CHECK =================
 
 @app.get("/")
 def health():
     return {"status": "AI Code Review Agent Running 🚀"}
 
 
-# ================= LOCAL PROJECT REVIEW =================
 
 @app.post("/review")
 async def review_project(request: ReviewRequest):
@@ -105,7 +97,6 @@ async def review_project(request: ReviewRequest):
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-# ================= FILE UPLOAD REVIEW =================
 
 @app.post("/review/file")
 async def review_file(file: UploadFile = File(...)):
@@ -115,17 +106,13 @@ async def review_file(file: UploadFile = File(...)):
         temp_dir = tempfile.mkdtemp()
         file_path = os.path.join(temp_dir, file.filename)
 
-        # 1. Read the uploaded content
         content = await file.read()
 
-        # 2. Write file safely in a thread (since I/O is blocking)
         def write_file():
             with open(file_path, "wb") as f:
                 f.write(content)
         await asyncio.to_thread(write_file)
 
-        # 3. 🔥 CRITICAL FIX: Direct await on the async review_codebase
-        # We REMOVE asyncio.to_thread here because review_codebase is already async
         result = await review_codebase(temp_dir)
 
         return {
@@ -138,11 +125,9 @@ async def review_file(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail="File processing failed")
 
     finally:
-        # 4. Clean up the temp directory
         await safe_cleanup(temp_dir)
 
-# ================= GITHUB BRANCH REVIEW =================
-# ================= GITHUB BRANCH REVIEW =================
+
 
 @app.post("/review/github-branch")
 async def review_github_branch(request: GitHubBranchRequest):

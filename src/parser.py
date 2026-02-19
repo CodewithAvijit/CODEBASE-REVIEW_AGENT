@@ -21,7 +21,6 @@ MAX_LINES_PER_FILE = 250
 MAX_TOTAL_CHARS = 20000
 
 
-# ================= SAFE FILE READER =================
 
 def read_file_limited(filepath: str) -> str:
     """Safely read text files with encoding fallback."""
@@ -37,7 +36,6 @@ def read_file_limited(filepath: str) -> str:
         return ""
 
 
-# ================= FILE PRIORITY =================
 
 def file_priority(fp: str) -> int:
     """Better priority logic for important files."""
@@ -61,14 +59,12 @@ def file_priority(fp: str) -> int:
     return 2
 
 
-# ================= MAIN PARSER =================
 
 def parse_codebase(root_path: str) -> str:
     filepaths = []
 
     for root, dirs, files in os.walk(root_path):
 
-        # Skip ignored directories
         dirs[:] = [d for d in dirs if d not in IGNORE_DIRS and not d.startswith(".")]
 
         for file in files:
@@ -79,7 +75,6 @@ def parse_codebase(root_path: str) -> str:
             if ext in SUPPORTED_EXTENSIONS:
                 filepaths.append(os.path.join(root, file))
 
-    # Sort by priority AND folder depth
     filepaths.sort(key=lambda fp: (file_priority(fp), len(fp)))
 
     combined_code = []
@@ -106,7 +101,6 @@ def parse_codebase(root_path: str) -> str:
     return "\n".join(combined_code)
 
 
-# ================= TRUNCATOR =================
 
 def truncate_code(code: str, max_chars: int = MAX_TOTAL_CHARS) -> str:
     """Hard truncate to protect LLM context window."""
