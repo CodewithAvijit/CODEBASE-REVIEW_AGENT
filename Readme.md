@@ -1,6 +1,5 @@
 
 
-```markdown
 # 🛡️ Guardian of Code
 
 **An AI-Powered Automated Codebase Review Agent**
